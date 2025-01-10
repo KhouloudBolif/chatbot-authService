@@ -17,9 +17,11 @@ Ce projet est une partie backend du projet de chatbot en utilisant Spring Boot p
 ## Configuration du Projet
 
 1. Accédez au répertoire du projet :
+   
       ```bash
       cd repertoire/de/projet
-2. Importez les dépendances Maven :
+3. Importez les dépendances Maven :
+   
       ```bash
       mvn clean install
 Cela créera un fichier JAR nommé spring-boot-docker.jar sous le répertoire target.
@@ -28,10 +30,12 @@ Cela créera un fichier JAR nommé spring-boot-docker.jar sous le répertoire ta
 
 1.Construction de l'image Docker :
      ```bash
+     
      docker build -t spring-boot-docker.jar .
      
 2.Exécutez l'application avec Docker :
       ```bash
+      
       docker run -p 9090:8080 spring-boot-docker.jar
       
 ==> Votre application sera accessible à l'adresse http://localhost:9090
