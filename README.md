@@ -2,7 +2,7 @@
 
 Ce projet est une partie backend du projet de chatbot en utilisant Spring Boot pour la gestion de l'authentification.
 
-## Prérequis
+## 📌 Prérequis
 
 1. JDK 21 installé
 2. IntelliJ IDEA ou tout autre IDE Java supportant Maven et Docker
