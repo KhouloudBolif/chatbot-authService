@@ -29,12 +29,12 @@ Cela créera un fichier JAR nommé spring-boot-docker.jar sous le répertoire ta
 ##Build et Lancer l'application avec Docker
 
 1.Construction de l'image Docker :
-     ```bash
+     
      
      docker build -t spring-boot-docker.jar .
      
 2.Exécutez l'application avec Docker :
-      ```bash
+   
       
       docker run -p 9090:8080 spring-boot-docker.jar
       
