@@ -14,9 +14,11 @@ public class JwtUtil {
 
 
     // Générer un token
-    public String generateToken(String email, String id) {
+    public String generateToken(String email, String id ,String firstName, String lastName) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("firstName", firstName )
+                .claim("lastName", lastName )
                 .claim("id", id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 heures

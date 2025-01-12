@@ -85,7 +85,7 @@ public class AuthController {
             ));
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId(), user.getFirstName(), user.getLastName());
 
         // Retourner une réponse JSON avec le token
         return ResponseEntity.ok(Map.of(
