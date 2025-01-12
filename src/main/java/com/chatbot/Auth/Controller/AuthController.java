@@ -20,11 +20,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/users")
 public class AuthController {
@@ -37,21 +35,27 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
     @PostMapping
-    public ResponseEntity<String> saveUser(@Valid @RequestBody User user, BindingResult bindingResult) {
+    public ResponseEntity<Map<String, Object>> saveUser(@Valid @RequestBody User user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             // Collecte les messages d'erreur des validations
-            String errors = bindingResult.getFieldErrors().stream()
+            List<String> errorMessages = bindingResult.getFieldErrors().stream()
                     .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .reduce((msg1, msg2) -> msg1 + "; " + msg2)
-                    .orElse("Invalid input");
+                    .toList();
 
-            // Retourne les erreurs de validation
-            return ResponseEntity.badRequest().body(errors);
+            // Retourne les erreurs sous forme de JSON
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Validation échouée",
+                    "errors", errorMessages
+            ));
         }
 
         // Enregistre l'utilisateur et retourne un succès
         userService.saveUser(user);
-        return ResponseEntity.ok("Le user est bien enregistré !");
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Le user est bien enregistré !"
+        ));
     }
 
 
@@ -62,28 +66,41 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
         User user = userService.getUserByEmail(request.getEmail());
 
         // Vérifier si l'utilisateur existe
         if (user == null) {
-            return ResponseEntity.badRequest().body("Utilisateur introuvable");
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Utilisateur introuvable"
+            ));
         }
 
         // Vérifier si le mot de passe est correct
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.badRequest().body("Mot de passe incorrect");
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Mot de passe incorrect"
+            ));
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(),user.getId());
-        return ResponseEntity.ok(token);
+        String token = jwtUtil.generateToken(user.getEmail(), user.getId());
+
+        // Retourner une réponse JSON avec le token
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Authentification réussie",
+                "token", token
+        ));
     }
+
 
     @Autowired
     private TokenBlacklistService blacklistService;
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Map<String, Object>> logout(@RequestHeader("Authorization") String token) {
         try {
             // Supprimer le préfixe "Bearer " du token
             token = token.replace("Bearer ", "");
@@ -97,20 +114,34 @@ public class AuthController {
             // Ajouter le token à la liste noire
             blacklistService.addTokenToBlacklist(token, claims.getExpiration());
 
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Déconnexion réussie");
-
-            return ResponseEntity.ok(response);
+            // Réponse en cas de succès
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Déconnexion réussie"
+            ));
         } catch (ExpiredJwtException e) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Token expiré"));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Token expiré"
+            ));
         } catch (SignatureException e) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Signature du token invalide"));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Signature du token invalide"
+            ));
         } catch (JwtException e) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Token invalide ou incorrect"));
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Token invalide ou incorrect"
+            ));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.singletonMap("error", "Une erreur interne est survenue"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "Une erreur interne est survenue"
+            ));
         }
     }
+
 
 
 }
