@@ -12,6 +12,7 @@ public class JwtUtil {
 
     public final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
+
     // Générer un token
     public String generateToken(String email, String id) {
         return Jwts.builder()
